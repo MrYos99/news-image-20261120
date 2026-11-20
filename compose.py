@@ -16,8 +16,9 @@ All text is drawn with PIL (crisp vector type) over a moderate bottom
 scrim, so nothing is garbled the way AI-generated text would be. Each
 panel keeps its own natural colours and light: the hero is warm daylight,
 the cyclone is blue-grey with orange rescue jackets, Berlin is cool
-grey-blue, APEC is warm sunset, Hormuz is golden hour, Nvidia is a clean
-green and silver lab, Delhi is warm sandstone morning. No panel sits under
+grey-blue, APEC is warm sunset, Hormuz is golden hour, Nvidia is
+Jensen Huang on a dark keynote stage with green accents, Delhi is
+warm sandstone morning. No panel sits under
 a heavy dark wash. No randomness anywhere: same inputs give the same
 bytes every run.
 """
@@ -41,15 +42,17 @@ def font(path, size):
     return ImageFont.truetype(path, size)
 
 
-def cover_crop(im, tw, th, focus_y=0.5):
+def cover_crop(im, tw, th, focus_y=0.5, focus_x=0.5):
     """Resize + crop so the image exactly fills tw x th.
 
     focus_y (0..1) places the crop window vertically: 0.5 = centred.
+    focus_x (0..1) places it horizontally: 0.5 = centred, 1.0 = right.
     """
     sw, sh = im.size
     scale = max(tw / sw, th / sh)
     im = im.resize((round(sw * scale), round(sh * scale)), Image.LANCZOS)
-    x = (im.width - tw) // 2
+    slack_x = im.width - tw
+    x = round(slack_x * focus_x) if slack_x > 0 else 0
     slack = im.height - th
     y = round(slack * focus_y) if slack > 0 else 0
     return im.crop((x, y, x + tw, y + th))
@@ -87,11 +90,12 @@ def wrap(draw, text, fnt, max_w):
 
 
 def panel(base, img_path, box, tag, headline, sub, head_size=22,
-          sub_size=17, focus_y=0.5, max_head_lines=3, scrim_alpha=180):
+          sub_size=17, focus_y=0.5, focus_x=0.5, max_head_lines=3,
+          scrim_alpha=180):
     x0, y0, x1, y1 = box
     tw, th = x1 - x0, y1 - y0
     im = Image.open(img_path).convert("RGB")
-    base.paste(cover_crop(im, tw, th, focus_y), (x0, y0))
+    base.paste(cover_crop(im, tw, th, focus_y, focus_x), (x0, y0))
     scrim(base, (x0, y0 + th // 2, x1, y1), max_alpha=scrim_alpha)
     d = ImageDraw.Draw(base)
     pad = 16
@@ -186,7 +190,7 @@ def main():
           "Iran refuses UN nuclear inspections.",
           focus_y=0.45)
     panel(base,
-          f"{ASSETS}/media-generation-panel-nvidia-chips-0-1646f4af-b19d-4654-80f9-5e17ae02d835.webp",
+          f"{ASSETS}/media-generation-panel-nvidia-huang-a-0-34006fc0.webp",
           (gx + cw + gut, gy2, gx + 2 * cw + gut, gy2 + ch2),
           "MARKETS",
           "NVIDIA POSTS RECORD REVENUE OF $115.8 BILLION",
@@ -199,7 +203,11 @@ def main():
           "SCO FORUM OPENS IN DELHI",
           "The Shanghai Cooperation Organisation forum opens in the "
           "Indian capital.",
-          focus_y=0.45, scrim_alpha=215)
+          # focus_x=1.0 crops the Indian flag's chakra wheel (far left
+          # of the source) out of the frame: it used to sit behind the
+          # D of DELHI and read as "ODELHI". The right-hand flags and
+          # the delegation stay in frame.
+          focus_y=0.45, focus_x=1.0, scrim_alpha=215)
 
     # ---- ticker --------------------------------------------------------
     d.rectangle([(0, 956), (W, H)], fill=(7, 16, 26))
