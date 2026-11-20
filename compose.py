@@ -190,7 +190,7 @@ def main():
           "Iran refuses UN nuclear inspections.",
           focus_y=0.45)
     panel(base,
-          f"{ASSETS}/media-generation-panel-nvidia-huang-a-0-34006fc0.webp",
+          f"{ASSETS}/media-generation-panel-nvidia-huang-b-0-4edec9fc.webp",
           (gx + cw + gut, gy2, gx + 2 * cw + gut, gy2 + ch2),
           "MARKETS",
           "NVIDIA POSTS RECORD REVENUE OF $115.8 BILLION",
